@@ -1,0 +1,12 @@
+# SOP v13.2 - Nanshan MVP Cloud Pack
+# 核心 API 框架
+fastapi
+gunicorn
+
+# Google Cloud 雲端武器
+google-cloud-storage    # 寫入 GCS (雲端倉庫)
+google-cloud-secret-manager # 讀取金鑰
+
+# 數據抓取武器
+praw                    # Reddit 官方 API
+# requests                # (備用，未來抓 X/Twitter)
