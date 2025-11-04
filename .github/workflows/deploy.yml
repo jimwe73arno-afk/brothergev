@@ -1,22 +1,27 @@
-name: Build & Deploy (Cloud Build → Cloud Run)
+name: Build and Deploy to Cloud Run
+
 on:
   push:
-    branches: [ main ]
+    branches: [ "main" ]
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      id-token: write
+      contents: 'read'
+      id-token: 'write'
+
     steps:
-      - uses: actions/checkout@v4
-      - id: auth
-        uses: google-github-actions/auth@v2
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Google Auth
+        id: auth
+        uses: 'google-github-actions/auth@v1'
         with:
-          workload_identity_provider: projects/234402937661/locations/global/workloadIdentityPools/github-pool/providers/github-provider
-          service_account: github-actions-deployer@brothergev-mvp-477006.iam.gserviceaccount.com
-      - name: Cloud Build
-        uses: google-github-actions/cloud-build@v2
-        with:
-          project_id: brothergev-mvp-477006
-          config: cloudbuild.yaml
+          workload_identity_provider: 'projects/234402937661/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+          service_account: 'github-actions-deployer@brothergev-mvp-477006.iam.gserviceaccount.com'
+
+      - name: Build and Deploy
+        run: |
+          gcloud builds submit --config=cloudbuild.yaml
