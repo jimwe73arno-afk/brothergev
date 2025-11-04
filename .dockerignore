@@ -1,6 +1,5 @@
-**
-!Dockerfile
-!requirements.txt
-!main.py
-!cloudbuild.yaml
-!.github/**
+.git
+__pycache__
+*.pyc
+.DS_Store
+node_modules

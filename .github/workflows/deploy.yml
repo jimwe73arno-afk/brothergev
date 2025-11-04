@@ -1,15 +1,13 @@
-name: Build & Deploy (Cloud Run GPT)
-
+name: Build & Deploy (Cloud Build → Cloud Run)
 on:
   push:
     branches: [ main ]
-
 jobs:
   deploy:
     runs-on: ubuntu-latest
     permissions:
-      id-token: write
       contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v4
       - id: auth

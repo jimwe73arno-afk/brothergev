@@ -1,25 +1,20 @@
-substitutions:
-  _SERVICE_NAME: 'ev-api-english-gpt'
-  _REGION: 'europe-west4'
-  _REPO_NAME: 'tesla-ai-repo'
-  _IMAGE: 'gcr.io/$PROJECT_ID/ev-api-english-gpt:${SHORT_SHA}'
-
 steps:
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', '${_IMAGE}', '.']
+    args: ['build','-t','gcr.io/$PROJECT_ID/ev-api-english-gpt:$SHORT_SHA','.']
 
   - name: 'gcr.io/google-cloud-sdk'
     entrypoint: gcloud
     args:
       - 'run'
       - 'deploy'
-      - '${_SERVICE_NAME}'
-      - '--region=${_REGION}'
-      - '--image=${_IMAGE}'
+      - 'ev-api-english-gpt'
+      - '--region=europe-west4'
+      - '--image=gcr.io/$PROJECT_ID/ev-api-english-gpt:$SHORT_SHA'
       - '--allow-unauthenticated'
-      - '--service-account=github-actions-deployer@${PROJECT_ID}.iam.gserviceaccount.com'
+      # 用 Compute Default 作為執行 SA（你之前已給它 Secret 權限）
+      - '--service-account=234402937661-compute@developer.gserviceaccount.com'
       - '--set-secrets=OPENAI_API_KEY=openai-api-key:latest'
       - '--update-env-vars=OPENAI_MODEL=gpt-4o-mini'
 
 images:
-  - '${_IMAGE}'
+  - 'gcr.io/$PROJECT_ID/ev-api-english-gpt:$SHORT_SHA'
