@@ -1,4 +1,4 @@
-cd $HOME/brothergev
+# 在正确的仓库目录中创建 cloudbuild.yaml
 cat > cloudbuild.yaml << 'EOF'
 steps:
   # === build image ===
