@@ -1,20 +1,25 @@
-# cloudbuild.yaml  —— 兼容 Actions 與手動 submit
 steps:
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build','-t','gcr.io/$PROJECT_ID/ev-api-english-gpt:$BUILD_ID','.']
-
-  - name: 'gcr.io/google-cloud-sdk'
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/ev-api-english-gpt:$SHORT_SHA', '.']
+  
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', 'gcr.io/$PROJECT_ID/ev-api-english-gpt:$SHORT_SHA']
+  
+  - name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
     entrypoint: gcloud
     args:
       - 'run'
       - 'deploy'
       - 'ev-api-english-gpt'
+      - '--image=gcr.io/$PROJECT_ID/ev-api-english-gpt:$SHORT_SHA'
       - '--region=europe-west4'
-      - '--image=gcr.io/$PROJECT_ID/ev-api-english-gpt:$BUILD_ID'
+      - '--platform=managed'
       - '--allow-unauthenticated'
-      - '--service-account=234402937661-compute@developer.gserviceaccount.com'
+      - '--port=8080'
+      - '--memory=1Gi'
+      - '--cpu=1'
+      - '--max-instances=2'
       - '--set-secrets=OPENAI_API_KEY=openai-api-key:latest'
-      - '--update-env-vars=OPENAI_MODEL=gpt-4o-mini'
 
 images:
-  - 'gcr.io/$PROJECT_ID/ev-api-english-gpt:$BUILD_ID'
+  - 'gcr.io/$PROJECT_ID/ev-api-english-gpt:$SHORT_SHA'

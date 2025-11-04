@@ -1,5 +1,7 @@
 .git
+.github
 __pycache__
 *.pyc
-.DS_Store
-node_modules
+.env
+.gitignore
+README.md

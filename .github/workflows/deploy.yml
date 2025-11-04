@@ -1,8 +1,12 @@
-name: Build and Deploy to Cloud Run
+name: Deploy to Google Cloud Run
 
 on:
   push:
-    branches: [ "main" ]
+    branches: [ main ]
+
+env:
+  PROJECT_ID: ${{ secrets.GCP_PROJECT_ID }}
+  GAR_LOCATION: europe-west4
 
 jobs:
   deploy:
@@ -12,16 +16,19 @@ jobs:
       id-token: 'write'
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v3
+    - name: Checkout
+      uses: actions/checkout@v4
 
-      - name: Google Auth
-        id: auth
-        uses: 'google-github-actions/auth@v1'
-        with:
-          workload_identity_provider: 'projects/234402937661/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
-          service_account: 'github-actions-deployer@brothergev-mvp-477006.iam.gserviceaccount.com'
+    - name: Google Auth
+      id: auth
+      uses: google-github-actions/auth@v1
+      with:
+        workload_identity_provider: 'projects/234402937661/locations/global/workloadIdentityPools/github-pool/providers/github-provider'
+        service_account: 'github-actions-deployer@brothergev-mvp-477006.iam.gserviceaccount.com'
 
-      - name: Build and Deploy
-        run: |
-          gcloud builds submit --config=cloudbuild.yaml
+    - name: Set up Cloud SDK
+      uses: google-github-actions/setup-gcloud@v1
+
+    - name: Build and Deploy
+      run: |-
+        gcloud builds submit --config=cloudbuild.yaml
