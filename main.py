@@ -1,42 +1,57 @@
 from flask import Flask, request, jsonify
-from flask_cors import CORS
 import os
-import logging
+from openai import OpenAI
 
 app = Flask(__name__)
-CORS(app)
-logging.basicConfig(level=logging.INFO)
 
-@app.route('/health', methods=['GET'])
-def health_check():
+# 从环境变量获取API密钥
+OPENAI_API_KEY = os.getenv("OPENAI_API_KEY")
+client = OpenAI(api_key=OPENAI_API_KEY) if OPENAI_API_KEY else None
+
+@app.route('/health')
+def health():
     return jsonify({
-        "status": "healthy",
-        "service": "EV AI Assistant",
-        "version": "2.0"
+        "status": "healthy", 
+        "ai_ready": bool(OPENAI_API_KEY),
+        "service": "EV AI Assistant"
     })
 
-@app.route('/ask', methods=['POST', 'GET'])
-def ask_question():
+@app.route('/ask', methods=['POST'])
+def ask():
     try:
-        if request.method == 'GET':
-            question = request.args.get('q', '').strip()
-        else:
-            data = request.get_json() or {}
-            question = data.get('q', '').strip()
+        data = request.get_json() or {}
+        question = data.get('q', '').strip()
         
         if not question:
             return jsonify({"error": "No question provided"}), 400
         
-        # 简单回应（后续可集成AI）
+        if not client:
+            return jsonify({
+                "question": question,
+                "answer": "AI service is configuring...",
+                "status": "configuring"
+            })
+        
+        # 调用 OpenAI
+        response = client.chat.completions.create(
+            model="gpt-4o-mini",
+            messages=[
+                {"role": "system", "content": "You are a Tesla and EV expert."},
+                {"role": "user", "content": question}
+            ],
+            max_tokens=500
+        )
+        
+        answer = response.choices[0].message.content
         return jsonify({
             "question": question,
-            "answer": f"Received your question: {question}. AI integration ready.",
-            "status": "success"
+            "answer": answer,
+            "status": "success",
+            "ai_used": True
         })
         
     except Exception as e:
-        logging.error(f"Error: {e}")
-        return jsonify({"error": "Internal server error"}), 500
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 8080))

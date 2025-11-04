@@ -1,5 +1,3 @@
-# 在正确的仓库目录中创建 cloudbuild.yaml
-cat > cloudbuild.yaml << 'EOF'
 steps:
   # === build image ===
   - name: "gcr.io/cloud-builders/docker"
@@ -9,27 +7,6 @@ steps:
   - name: "gcr.io/cloud-builders/docker"
     args: ["push", "gcr.io/brothergev-mvp-477006/ev-ai-final:latest"]
 
-  # === create/add secret version ===
-  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        echo -n 'YOUR_REAL_KEY_HERE' | gcloud secrets create GOOGLE_API_KEY --data-file=- --replication-policy=automatic || \
-        echo -n 'YOUR_REAL_KEY_HERE' | gcloud secrets versions add GOOGLE_API_KEY --data-file=-
-
-  # === grant Run service SA read secret ===
-  - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
-    entrypoint: bash
-    args:
-      - -c
-      - |
-        PROJECT_NUM=$(gcloud projects describe brothergev-mvp-477006 --format='value(projectNumber)')
-        SA_RUN="${PROJECT_NUM}-compute@developer.gserviceaccount.com"
-        gcloud secrets add-iam-policy-binding GOOGLE_API_KEY \
-          --member="serviceAccount:${SA_RUN}" \
-          --role="roles/secretmanager.secretAccessor"
-
   # === deploy ===
   - name: "gcr.io/google.com/cloudsdktool/cloud-sdk"
     args:
@@ -37,8 +14,7 @@ steps:
         "run", "deploy", "ev-ai-final",
         "--region=europe-west4",
         "--image=gcr.io/brothergev-mvp-477006/ev-ai-final:latest",
-        "--set-secrets=GOOGLE_API_KEY=GOOGLE_API_KEY:latest,OPENAI_API_KEY=GOOGLE_API_KEY:latest,GEMINI_API_KEY=GOOGLE_API_KEY:latest"
+        "--set-secrets=OPENAI_API_KEY=openai-api-key:latest"
       ]
 
 timeout: "900s"
-EOF
